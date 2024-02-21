@@ -8,45 +8,42 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Snackbar,
   useMediaQuery,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import RecipientField from "./components/recipient_textfield";
-import { EMAIL_ENDPOINTS, MAILBOX_ENDPOINTS, USER_ENDPOINTS } from "../../../api";
+import { MAILBOX_ENDPOINTS, USER_ENDPOINTS } from "../../../api";
 import SmallUserProfile from "./components/small_user_component";
+import SendButton from "./components/send_button";
+import UserProfile from "../../app_bar/actions/user_widget";
 
 const PersistentPopup = ({ isOpen, handleOpenOrClose }) => {
   const [sender, setSender] = useState("");
-  const [subject, setSubject] = useState(
-    localStorage.getItem("emailSubject") || ""
-  );
-  const [content, setContent] = useState(
-    localStorage.getItem("emailContent") || ""
-  );
+  const [subject, setSubject] = useState(localStorage.getItem("emailSubject") || "");
+  const [content, setContent] = useState(localStorage.getItem("emailContent") || "");
   const [searchResult, setSearchResult] = useState([]);
   const [error, setError] = useState("");
-  const [sending, setSending] = useState(false); // State to track if email is being sent
+  const [sending, setSending] = useState(false);
   const token = localStorage.getItem("token");
-  const [selectedUsers, setSelectedUsers] = useState(
-    JSON.parse(localStorage.getItem("selectedUsers")) || []
-  );
+  const [selectedUsers, setSelectedUsers] = useState(JSON.parse(localStorage.getItem("selectedUsers")) || []);
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   useEffect(() => {
-    // Fetch current user's email using token
     const fetchCurrentUserEmail = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(
-          USER_ENDPOINTS.GET_MY_USERINFO_BY_TOKEN,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response.data)
-        const currentUserEmail = response.data.email;
+        const response = await axios.get(USER_ENDPOINTS.GET_MY_USERINFO_BY_TOKEN, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const currentUserEmail = response.data._id;
         setSender(currentUserEmail);
       } catch (error) {
         console.error("Error fetching current user email:", error);
@@ -57,17 +54,14 @@ const PersistentPopup = ({ isOpen, handleOpenOrClose }) => {
   }, [token]);
 
   useEffect(() => {
-    // Save the subject to localStorage when it changes
     localStorage.setItem("emailSubject", subject);
   }, [subject]);
 
   useEffect(() => {
-    // Save the content to localStorage when it changes
     localStorage.setItem("emailContent", content);
   }, [content]);
 
   useEffect(() => {
-    // Save the selectedUsers to localStorage when it changes
     localStorage.setItem("selectedUsers", JSON.stringify(selectedUsers));
   }, [selectedUsers]);
 
@@ -82,121 +76,153 @@ const PersistentPopup = ({ isOpen, handleOpenOrClose }) => {
       return;
     }
 
-    setSending(true); // Start sending state
-    console.log("we got heree")
-    console.log(selectedUsers.map((user) => user.email));
+    setSending(true);
+
     try {
-      // Add logic to send the email
       await axios.post(MAILBOX_ENDPOINTS.SEND, {
         from: sender,
-        to: selectedUsers.map((user) => user.email), // Use selectedUsers as recipients
+        to: selectedUsers.map((user) => user.email),
         subject: subject,
         content: content,
       }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
-      );
+      });
 
-      // Clear localStorage values after sending
       localStorage.removeItem("emailSubject");
       localStorage.removeItem("emailContent");
       localStorage.removeItem("selectedUsers");
 
-      // Close the popup after sending
       handleOpenOrClose();
     } catch (err) {
       console.error("Error sending email:", err);
       setError("Failed to send email. Please try again.");
     } finally {
-      setSending(false); // Reset sending state
+      setSending(false);
     }
   };
 
-  const isSmallScreen = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+  const isSmallScreen = useMediaQuery("(max-width:600px)");
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleOpenOrClose}
-      fullWidth
-      maxWidth="sm"
-      PaperProps={
-        {
-          // sx: {
-          //   padding: "20px",
-          // },
-        }
-      }
-    >
-      <DialogTitle>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="h6">New Message</Typography>
-          <IconButton onClick={handleOpenOrClose}>
-            <CloseIcon />
-          </IconButton>
-        </div>
-      </DialogTitle>
-      <DialogContent>
-        <div style={{ marginBottom: "20px" }}>
-          <Typography variant="body1">From: </Typography>
-          <SmallUserProfile />
-        </div>
-        <div style={{ marginBottom: "20px" }}>
-          <Typography variant="body1">To:</Typography>
-          <RecipientField
-            selectedUsers={selectedUsers}
-            setSelectedUsers={setSelectedUsers}
-          />
-        </div>
-        {searchResult.length > 0 && (
-          <ul>
-            {searchResult.map((user) => (
-              <li key={user._id}>{user.email}</li>
-            ))}
-          </ul>
-        )}{" "}
-        <hr/>
-        <br />
-        <TextField
-          label="Subject"
-          variant="outlined"
-          fullWidth
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          style={{ marginBottom: "20px" }}
-        />
-        <br />
-        <TextField
-          label="Content"
-          variant="outlined"
-          multiline
-          rows={10}
-          fullWidth
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          style={{ marginBottom: "20px" }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Typography color="error" variant="body2">
-          {error}
-        </Typography>
-        <Button onClick={handleOpenOrClose} color="inherit">
-          Cancel
-        </Button>
-        <Button onClick={handleSend} color="primary" disabled={sending}>
-          {sending ? "Sending..." : "Send"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      {isSmallScreen ? (
+        <Dialog open={isOpen} onClose={handleOpenOrClose} fullScreen>
+          <DialogTitle>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Typography variant="h6">New Message</Typography>
+              <IconButton onClick={handleOpenOrClose}>
+                <CloseIcon />
+              </IconButton>
+            </div>
+          </DialogTitle>
+          <DialogContent>
+            <div className="flex flex-row align-middle items-center" style={{ marginBottom: "20px" }}>
+              <Typography variant="body1">From: </Typography>
+              <SmallUserProfile />
+            </div>
+            <div className="flex flex-row" style={{ marginBottom: "20px" }}>
+              <Typography variant="body1">To:</Typography>
+              <RecipientField
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+              />
+            </div>
+            <hr />
+            <br />
+            <TextField
+              label="Subject"
+              variant="outlined"
+              fullWidth
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              style={{ marginBottom: "20px" }}
+            />
+            <br />
+            <TextField
+              label="Content"
+              variant="outlined"
+              multiline
+              rows={10}
+              fullWidth
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              style={{ marginBottom: "20px" }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+            <Button onClick={handleOpenOrClose} color="inherit">
+              Cancel
+            </Button>
+            <SendButton onClick={handleSend} sending={sending} />
+          </DialogActions>
+        </Dialog>
+      ) : (
+        <Dialog open={isOpen} onClose={handleOpenOrClose} fullWidth maxWidth="sm">
+          <DialogTitle>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Typography variant="h6">New Message</Typography>
+              <IconButton onClick={handleOpenOrClose}>
+                <CloseIcon />
+              </IconButton>
+            </div>
+          </DialogTitle>
+          <DialogContent>
+            <div className="flex flex-row align-middle items-center" style={{ marginBottom: "20px" }}>
+              <Typography variant="body1">From: </Typography>
+              <SmallUserProfile />
+            </div>
+            <div className="flex flex-row" style={{ marginBottom: "20px" }}>
+              <Typography variant="body1">To:</Typography>
+              <RecipientField
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+              />
+            </div>
+            <hr />
+            <br />
+            <TextField
+              label="Subject"
+              variant="outlined"
+              fullWidth
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              style={{ marginBottom: "20px" }}
+            />
+            <br />
+            <TextField
+              label="Content"
+              variant="outlined"
+              multiline
+              rows={10}
+              fullWidth
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              style={{ marginBottom: "20px" }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+            <Button onClick={handleOpenOrClose} color="inherit">
+              Cancel
+            </Button>
+            <SendButton onClick={handleSend} sending={sending} />
+          </DialogActions>
+        </Dialog>
+      )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={10000}
+        onClose={handleSnackbarClose}
+        message="Email sent successfully"
+      />
+    </>
   );
 };
 

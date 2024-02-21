@@ -8,6 +8,9 @@ const HomePage = ({ userName, onViewMessagesClick }) => {
   const [unreadMessages, setUnreadMessages] = useState([]);
   const [totalMessages, setTotalMessages] = useState(0);
   const [firstName, setFirstName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     // Load user data from localStorage
     const userData = JSON.parse(localStorage.getItem('userData'));
@@ -16,12 +19,11 @@ const HomePage = ({ userName, onViewMessagesClick }) => {
     }
   }, []); // Empty dependency array ensures this effect runs only once when the component mounts
 
-
-
   useEffect(() => {
-    const fetchUnreadMessages = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
+        setLoading(true);
+        const unreadResponse = await axios.get(
           MAILBOX_ENDPOINTS.GET_MY_INBOX_UNREAD_COUNT,
           {
             headers: {
@@ -29,36 +31,87 @@ const HomePage = ({ userName, onViewMessagesClick }) => {
             },
           }
         );
-        setUnreadMessages(response.data);
+        setUnreadMessages(unreadResponse.data);
+
+        const totalResponse = await axios.get(
+          MAILBOX_ENDPOINTS.GET_MY_INBOX_COUNT,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setTotalMessages(totalResponse.data.length);
+
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching unread messages:", error);
+        console.error("Error fetching messages:", error);
+        setError(error.message);
+        setLoading(false);
       }
     };
 
-    const fetchTotalMessages = async () => {
-      try {
-        const response = await axios.get(MAILBOX_ENDPOINTS.GET_MY_INBOX_COUNT, {
+    fetchData();
+  }, []);
+
+  const handleReload = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await fetchData();
+    } catch (error) {
+      console.error("Error reloading data:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const unreadResponse = await axios.get(
+        MAILBOX_ENDPOINTS.GET_MY_INBOX_UNREAD_COUNT,
+        {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        });
-        setTotalMessages(response.data.length);
-      } catch (error) {
-        console.error("Error fetching total messages:", error);
-      }
-    };
+        }
+      );
+      setUnreadMessages(unreadResponse.data);
 
-    fetchUnreadMessages();
-    fetchTotalMessages();
-  }, []);
+      const totalResponse = await axios.get(
+        MAILBOX_ENDPOINTS.GET_MY_INBOX_COUNT,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setTotalMessages(totalResponse.data.length);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      throw error;
+    }
+  };
 
   return (
     <div className="p-4 flex flex-col items-center justify-center h-full">
-    <Typography className="mb-4" variant="h4">
-      Hello {firstName}
-    </Typography>
+      <Typography className="mb-4" variant="h4">
+        Hello {firstName}
+      </Typography>
 
-      {unreadMessages && unreadMessages.length === 0 ? (
+      {loading ? (
+        <Typography variant="body1">Loading...</Typography>
+      ) : error ? (
+        <div>
+          <Typography variant="body1" color="error">
+            Error: {error}
+          </Typography>
+          <Button variant="contained" onClick={handleReload}>
+            Reload
+          </Button>
+        </div>
+      ) : unreadMessages && unreadMessages.length === 0 ? (
         <Typography variant="body1" style={{ marginBottom: "16px" }}>
           You have no unread messages out of {totalMessages} total.
         </Typography>
@@ -79,7 +132,6 @@ const HomePage = ({ userName, onViewMessagesClick }) => {
           View Messages
         </Button>
       </Link>
-
     </div>
   );
 };

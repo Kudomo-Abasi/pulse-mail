@@ -15,7 +15,7 @@ const MyAppBar = ({ onOpenSideNav, openComposeModal }) => {
     >
       <div sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         <MenuButton onClick={onOpenSideNav} />
-        <SearchBar />
+        {/* <SearchBar /> */}
       </div>
       <div className="flex align-middle">
         <IconButton

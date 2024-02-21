@@ -9,10 +9,11 @@ export const AUTH_ENDPOINTS = {
 export const EMAIL_ENDPOINTS = {
   GET_EMAIL_BY_ID: (emailId) => `${API_BASE_URL}/email/${emailId}`,
   MARK_AS_READ: (emailId) => `${API_BASE_URL}/email/${emailId}/mark-as-read`,
+  GET_PREV_EMAIL: (emailId) => `${API_BASE_URL}/email/prev/${emailId}`,
+  GET_NEXT_EMAIL: (emailId) => `${API_BASE_URL}/email/next/${emailId}`,   
   MARK_AS_UNREAD: (emailId) =>
     `${API_BASE_URL}/email/${emailId}/mark-as-unread`,
-    
-
+  DELETE: (emailId) => `${API_BASE_URL}/email/delete/${emailId}`,
 };
 
 // TODO: look into this

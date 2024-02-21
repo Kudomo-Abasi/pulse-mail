@@ -12,11 +12,12 @@ const MessageListHeader = ({ onReload, start, end, totalEmails, onPrevPage, onNe
       return '';
     }
   }, [start, end, totalEmails]);
-
+  
   return (
     <div className="flex justify-between items-center p-1 bg-primary">
+      <p>{displayRange}</p>
+
     {/* Backward Button */}
-    <p>{displayRange}</p>
     <IconButton
       color="inherit"
       onClick={onPrevPage}

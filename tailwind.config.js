@@ -8,6 +8,7 @@ module.exports = {
         branddark: '#171717',
         brandlight: '#e4915e',
         brandmedium: '#892912',
+        brandwhite: '#ffffff',
       },
     },
   },

@@ -19,6 +19,7 @@ import axios from "axios";
 import DateAndTimeComp from "../../sub_components/date_and_time";
 import { Avatar } from "@mui/material";
 import { EMAIL_ENDPOINTS } from "../../../api";
+import DeleteButton from "../inbox/components/delete_button";
 
 const EachMessagePage = () => {
   const [email, setEmail] = useState(null);
@@ -67,7 +68,7 @@ const EachMessagePage = () => {
 
   const handleMarkAsRead = async () => {
     try {
-      await axios.put(EMAIL_ENDPOINTS.MARK_AS_READ(messageId),{}, {
+      await axios.put(EMAIL_ENDPOINTS.MARK_AS_READ(messageId), {}, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -82,7 +83,7 @@ const EachMessagePage = () => {
     const token = localStorage.getItem("token");
 
     try {
-      await axios.put(EMAIL_ENDPOINTS.MARK_AS_UNREAD(messageId), {},{
+      await axios.put(EMAIL_ENDPOINTS.MARK_AS_UNREAD(messageId), {}, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -92,6 +93,38 @@ const EachMessagePage = () => {
       console.error("Error marking email as unread:", error);
     }
     handleClose();
+  };
+
+  const handleNextEmail = async () => {
+    try {
+      const response = await axios.get(
+        EMAIL_ENDPOINTS.GET_NEXT_EMAIL(messageId),
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      navigate(`/messages/${response.data.email._id}`);
+    } catch (error) {
+      console.error("Error fetching next email:", error);
+    }
+  };
+
+  const handlePrevEmail = async () => {
+    try {
+      const response = await axios.get(
+        EMAIL_ENDPOINTS.GET_PREV_EMAIL(messageId),
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      navigate(`/messages/${response.data.email._id}`);
+    } catch (error) {
+      console.error("Error fetching previous email:", error);
+    }
   };
 
   if (loading) {
@@ -137,16 +170,16 @@ const EachMessagePage = () => {
   }
 
   return (
-    <div className="p-5">
+    <div className="px-4">
       <div className="flex justify-between items-center mb-4">
         <IconButton color="inherit" onClick={() => navigate(-1)}>
           <ArrowBackIcon />
         </IconButton>
         <div className="flex items-center">
-          <IconButton color="inherit">
+          <IconButton color="inherit" onClick={handlePrevEmail}>
             <ArrowLeftIcon />
           </IconButton>
-          <IconButton color="inherit">
+          <IconButton color="inherit" onClick={handleNextEmail}>
             <ArrowRightIcon />
           </IconButton>
         </div>
@@ -182,9 +215,10 @@ const EachMessagePage = () => {
             <MenuItem onClick={handleClose}>
               <ReplyIcon sx={{ mr: 1 }} /> Reply
             </MenuItem>
-            <MenuItem onClick={handleClose}>
+            {/* <MenuItem onClick={handleClose}>
               <DeleteIcon sx={{ mr: 1 }} /> Delete
-            </MenuItem>
+            </MenuItem> */}
+            <DeleteButton emailId={email._id}/>
           </Menu>
         </div>
       </div>

@@ -70,7 +70,7 @@ const SmallUserProfile = () => {
   };
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center pl-2">
       <ButtonBase>
         {userInfo?.avatar ? (
           <Avatar src={userInfo.avatar} alt={`${userInfo.firstName} ${userInfo.lastName}`} />

@@ -16,7 +16,7 @@ import DateAndTimeComp from "../../sub_components/date_and_time";
 import { MAILBOX_ENDPOINTS } from "../../../api";
 import axios from "axios";
 
-const InboxMailsListComponent = () => {
+const SentMailsListComponent = () => {
   const [messages, setMessages] = useState([]);
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
@@ -33,7 +33,7 @@ const InboxMailsListComponent = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(MAILBOX_ENDPOINTS.GET_MY_INBOX, {
+      const response = await axios.get(MAILBOX_ENDPOINTS.GET_MY_SENT_MAILS, {
         params: {
           page,
           limit: PAGE_SIZE,
@@ -79,9 +79,10 @@ const InboxMailsListComponent = () => {
 
   return (
     <div>
-      {/* floating header */}
+      {/* Floating header */}
       <div className="sticky top-0 z-50 bg-primary px-4 flex justify-between items-center bg-brandwhite">
         <div className="flex items-center space-x-2">
+          {/* Back button and title */}
           <IconButton
             onClick={() => navigate(-1)}
             edge="start"
@@ -90,12 +91,12 @@ const InboxMailsListComponent = () => {
           >
             <ArrowBackIcon />
           </IconButton>
-
           <Typography variant="h6" noWrap>
-            Inbox
+            Sent Mails {/* Update title */}
           </Typography>
         </div>
         <div className="flex items-center space-x-2">
+          {/* Pagination and reload button */}
           <MessageListHeader
             onReload={handleReload}
             start={start}
@@ -106,6 +107,8 @@ const InboxMailsListComponent = () => {
           />
         </div>
       </div>
+
+      {/* List of sent mails */}
       <div className="m-auto">
         {loading ? (
           <Typography>Loading...</Typography>
@@ -129,11 +132,13 @@ const InboxMailsListComponent = () => {
                   }`}
                   style={{ background: message.isRead ? "#faf3f8" : "white" }}
                 >
-                  {message.from && (
+                  {/* Avatar representing recipient */}
+                  {message.to && (
                     <ListItemAvatar>
-                      <Avatar alt="User Avatar" src={message.avatar} />
+                      <Avatar alt="Recipient Avatar" src={message.avatar} />
                     </ListItemAvatar>
                   )}
+                  {/* Display recipient's email address */}
                   <ListItemText
                     primary={message.subject || ""}
                     secondary={
@@ -143,9 +148,10 @@ const InboxMailsListComponent = () => {
                           variant="body2"
                           color="textPrimary"
                         >
-                          {message.from} {/* Display "from" field */}
+                          {message.to} {/* Display "to" field */}
                         </Typography>
                         <br />
+                        {/* Display message content */}
                         {message.content.length > 50
                           ? `${message.content.substring(0, 50)}...`
                           : message.content}
@@ -162,6 +168,7 @@ const InboxMailsListComponent = () => {
                       },
                     }}
                   />
+                  {/* Display timestamp */}
                   <ListItemText
                     className="items-end text-right"
                     primary={
@@ -182,4 +189,5 @@ const InboxMailsListComponent = () => {
   );
 };
 
-export default InboxMailsListComponent;
+
+export default SentMailsListComponent;

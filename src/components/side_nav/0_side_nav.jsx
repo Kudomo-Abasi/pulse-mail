@@ -12,6 +12,8 @@ import HomeIcon from "@mui/icons-material/Home";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { Link } from "react-router-dom";
+import SendIcon from '@mui/icons-material/Send';
+import InboxIcon from '@mui/icons-material/Inbox';
 
 export const SideNavContent = ({ closeSideNav, openComposeModal }) => {
   const sideNavRef = useRef(null);
@@ -68,9 +70,17 @@ export const SideNavContent = ({ closeSideNav, openComposeModal }) => {
         <Link to="/messages" onClick={closeSideNav}>
           <ListItemButton>
             <ListItemIcon>
-              <MailIcon />
+              <InboxIcon />
             </ListItemIcon>
             <ListItemText primary="Inbox" />
+          </ListItemButton>
+        </Link>
+        <Link to="/sent-messages" onClick={closeSideNav}>
+          <ListItemButton>
+            <ListItemIcon>
+              <SendIcon />
+            </ListItemIcon>
+            <ListItemText primary="Sent" />
           </ListItemButton>
         </Link>
       </List>
@@ -85,6 +95,15 @@ export const SideNavContent = ({ closeSideNav, openComposeModal }) => {
       >
         <AddIcon className="mr-4" />
         Compose
+      </Button>
+
+      {/* Contact Developer Button */}
+      <Button
+        variant="text"
+        onClick={() => window.open("mailto:kuyana57@gmail.com")}
+        style={{ marginTop: "16px" }}
+      >
+        Contact the developer
       </Button>
     </div>
   );
