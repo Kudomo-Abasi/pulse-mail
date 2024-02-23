@@ -3,10 +3,12 @@ import { Avatar, ButtonBase, Typography, Popover, Button } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { USER_ENDPOINTS } from '../../../api';
 import axios from 'axios';
+import { useHistory } from 'react-router-dom'; // Import useHistory hook
 
 const UserProfile = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const history = useHistory(); // Initialize useHistory hook
 
   useEffect(() => {
     // Load user data from localStorage when component mounts
@@ -69,6 +71,8 @@ const UserProfile = () => {
     localStorage.removeItem('userData');
     localStorage.removeItem('token');
     setUserInfo(null);
+    history.push('/'); // Navigate to the home page
+
   };
 
   const handlePopoverOpen = (event) => {

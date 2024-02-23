@@ -64,10 +64,11 @@ export default function SignIn() {
     try {
       const url = AUTH_ENDPOINTS.LOGIN;
       const response = await axios.post(url, data);
-      const token = response.data.data; // Extract token from response
+      const token = response.data.data.token; // Extract token from response
 
       // Store token in local storage
       localStorage.setItem("token", token);
+      localStorage.setItem("userData", response.data.data.userData);
 
       // Fetch user information using the token
       const userInfoResponse = await axios.get(
@@ -185,7 +186,7 @@ export default function SignIn() {
                 color="primary"
                 mt={2}
               >
-                Sign In
+                Login
               </Button>
             </form>
           </>

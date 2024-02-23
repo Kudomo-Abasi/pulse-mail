@@ -45,10 +45,13 @@ export default function SignUp() {
       const signInUrl = AUTH_ENDPOINTS.LOGIN; // "http://localhost:5000/api/auth";
       const signInData = { email: data.email, password: data.password };
       const signInResponse = await axios.post(signInUrl, signInData);
-
+      const token = signInResponse.data.data.token;
       // Store the authentication token in local storage
-      localStorage.setItem("token", signInResponse.data.token);
+      localStorage.setItem("token", signInResponse.data.data.token);
+      
+      localStorage.setItem("userData", signInResponse.data.data.userData);
 
+      console.log(localStorage.getItem(token));
       // Redirect the user to the desired page
       navigate("/");
     } catch (error) {

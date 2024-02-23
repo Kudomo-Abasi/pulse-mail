@@ -1,5 +1,5 @@
 // api.js
-const API_BASE_URL = "https://backend-pulse-mail-production.up.railway.app";
+const API_BASE_URL = "https://test-backend-pulse-mail-bcryptjs-production.up.railway.app/api";
 // const API_BASE_URL = "http://localhost:5000/api";
 
 export const AUTH_ENDPOINTS = {
